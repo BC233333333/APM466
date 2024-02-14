@@ -1,0 +1,97 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+---
+
+```{r}
+library(jrvFinance)
+library(readxl)
+library(tidyverse)
+library(knitr)
+library(lubridate)
+library(rmarkdown)
+library(readr)
+library(dbplyr)
+library(data.table)
+```
+
+
+```{r}
+
+bond <- read_excel("Book2 - Copy.xlsx")
+
+
+couponrate <-c(0.025,0.0225,0.015,0.0225,0.015,0.0125,0.005,0.0025,0.0025,0.01)
+ISIN <- bond$ISIN
+
+
+maturity = c("2024-6-1", "2025-6-1", "2026-6-1", "2024-3-1", "2024-9-1", "2025-3-1","2025-9-1",
+                      "2026-3-1", "2024-4-1", "2026-9-1")
+
+
+issue<- c("2013-7-2","2014-6-30","2015-7-21","2018-10-5","2019-4-5","2019-10-11","2020-9-1","2024-3-1","2020-10-16","2019-4-16")
+
+Close_Price_date<- c("2024-1-8", "2024-1-9", "2024-1-10", "2024-1-11", "2024-1-12", "2024-1-15", "2024-1-16", 
+                      "2024-1-17", "2024-1-18", "2024-1-19")
+
+
+
+
+Close_Price <- matrix(c(bond$"45299", bond$"45300", bond$"45301", bond$"45302", bond$"45303", bond$"45306", bond$"45307", 
+                      bond$"45308", bond$"45309", bond$"45310"), nrow = 10, ncol = 10, 
+                      byrow = T)
+```
+
+
+
+
+
+```{r}
+
+
+
+ytm_matrix = matrix(nrow=10, ncol=10)
+
+for (j in c(1:10)){
+  collect_price=Close_Price[, j]
+  for (i in c(1:10)){
+    ytm_matrix[i,j]<-bond.yield(settle = Close_Price_date[i], mature = maturity[j], coupon = couponrate[j],
+                                freq = 2, 
+                                collect_price[j], 
+                                convention=c("30/360", "ACT/ACT", "ACT/360", "30/360E"),
+                                comp.freq = 2, redemption_value = 100)
+  }
+}
+ 
+  
+
+```
+
+```{r}
+
+year <-c(0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5)
+
+plot(year,ytm_matrix[1,],type="o",main="5-year YTM Curve", col="black",
+     xlab="Year",ylab="YTM",ylim=c(0.03,0.06),lwd=1.0)
+
+for (i in c(1:10)){
+  lines(year, ytm_matrix[i,],type = "l", col = rainbow(10)[i-1], lwd = 0.8)
+}
+
+legend("bottomright",pch=c(1,1),legend=c("2024-1-8", "2024-1-9", "2024-1-10", "2024-1-11", "2024-1-12", "2024-1-15", "2024-1-16", "2024-1-17", "2024-1-18", "2024-1-19"),
+       lty=100,cex=0.4)
+       
+```
+
+
+
+
+
+```{r}
+
+
+```
+
